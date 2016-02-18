@@ -14,8 +14,13 @@ namespace DirectoryDetailViewer
             Console.WriteLine("Please enter full directory path.");
             string directoryPath = Console.ReadLine();
 
-            while (directoryPath != "exit")
+            while (directoryPath.Trim() != string.Empty)
             {
+                if (directoryPath == "exit")
+                {
+                    return;
+                }
+
                 if (!existsDirectory(directoryPath))
                 {
                     Console.WriteLine("The requested directory was NOT found.");
@@ -29,8 +34,14 @@ namespace DirectoryDetailViewer
                 count = 0;
                 addByteSize(directoryPath);
 
-                Console.WriteLine("Total File Size : {0} byte", size.ToString("#,0"));
-                Console.WriteLine("Total File Count: {0}", count.ToString("#,0"));
+                string formatedSize = formatSize(size);
+                if (formatedSize.Substring(formatedSize.Length - 1, 1) == "B")
+                {
+                    formatedSize += string.Format(" ({0} bytes)", size.ToString("#,0"));
+                }
+
+                Console.WriteLine("Total File Size : {0}", formatedSize);
+                Console.WriteLine("Total File Count: {0} Files", count.ToString("#,0"));
 
                 Console.WriteLine();
                 Console.WriteLine("Please enter full directory path.");
@@ -109,6 +120,36 @@ namespace DirectoryDetailViewer
                 size += fi.Length;
                 count++;
             }
+        }
+
+        private static string formatSize(long size)
+        {
+            // TeraByte
+            if (size >= Math.Pow(2, 40)) 
+            {
+                return Math.Round(size / Math.Pow(2, 40), 3).ToString("#,0") + " TB";
+            }
+
+            // GigaByte
+            if (size >= Math.Pow(2, 30))
+            {
+                return Math.Round(size / Math.Pow(2, 30), 3).ToString("#,0") + " GB";
+            }
+
+            // MegaByte
+            if (size >= Math.Pow(2, 20)) 
+            {
+                return Math.Round(size / Math.Pow(2, 20), 3).ToString("#,0") + " MB";
+            }
+
+            // KiloByte
+            if (size >= Math.Pow(2, 10)) 
+            {
+                return Math.Round(size / Math.Pow(2, 10), 3).ToString("#,0") + " KB";
+            }
+
+            //byte
+            return size.ToString("#,0") + " Bytes";
         }
     }
 }
