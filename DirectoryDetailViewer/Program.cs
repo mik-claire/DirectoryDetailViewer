@@ -5,12 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
+using NLog;
+
 namespace DirectoryDetailViewer
 {
     class Program
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         static void Main(string[] args)
         {
+            logger.Info("=== Activated! ===");
+
             Console.WriteLine("Please enter full directory path.");
             string directoryPath = Console.ReadLine();
 
@@ -18,12 +24,16 @@ namespace DirectoryDetailViewer
             {
                 if (directoryPath == "exit")
                 {
+                    logger.Info("=== Exit... ===");
                     return;
                 }
+
+                logger.Info("Input: {0}", directoryPath);
 
                 if (!existsDirectory(directoryPath))
                 {
                     Console.WriteLine("The requested directory was NOT found.");
+                    logger.Warn("The requested directory was NOT found.");
                     Console.WriteLine();
                     Console.WriteLine("Please enter full directory path.");
                     directoryPath = Console.ReadLine();
@@ -42,6 +52,8 @@ namespace DirectoryDetailViewer
 
                 Console.WriteLine("Total File Size : {0}", formatedSize);
                 Console.WriteLine("Total File Count: {0} Files", count.ToString("#,0"));
+                logger.Info("Total File Size : {0}", formatedSize);
+                logger.Info("Total File Count: {0} Files", count.ToString("#,0"));
 
                 Console.WriteLine();
                 Console.WriteLine("Please enter full directory path.");
@@ -49,6 +61,8 @@ namespace DirectoryDetailViewer
             }
 
             Console.WriteLine("Please enter any key to exit...");
+
+            logger.Info("=== Exit... ===");
             Console.ReadLine();
         }
 
@@ -86,6 +100,7 @@ namespace DirectoryDetailViewer
 
         private static long size = 0;
         private static int count = 0;
+        private static string indent = "└";
         private static void addByteSize(string directoryPath)
         {
             if (!existsDirectory(directoryPath))
@@ -94,7 +109,7 @@ namespace DirectoryDetailViewer
             }
 
             DirectoryInfo root = new DirectoryInfo(directoryPath);
-
+            logger.Debug("{0}{1}", indent, root.Name);
             var dis = root.GetDirectories();
             if (0 < dis.Length)
             {
@@ -105,7 +120,9 @@ namespace DirectoryDetailViewer
                         continue;
                     }
 
+                    indent = indent.Insert(0, "  ");
                     addByteSize(di.FullName);
+                    indent = indent.Substring(2, indent.Length - 2);
                 }
             }
 
@@ -119,6 +136,7 @@ namespace DirectoryDetailViewer
 
                 size += fi.Length;
                 count++;
+                logger.Debug("{0}{1}: {2}", indent, fi.Name, formatSize(fi.Length));
             }
         }
 
