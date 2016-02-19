@@ -17,6 +17,21 @@ namespace DirectoryDetailViewer
         {
             logger.Info("=== Activated! ===");
 
+            string filePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"\CheckList.txt";
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    List<string> pathList = readFile(filePath);
+                    autoCheck(pathList);
+                }
+                catch
+                {
+                    // TODO
+                    // 例外処理めんどい。
+                }
+            }
+
             Console.WriteLine("Please enter full directory path.");
             string directoryPath = Console.ReadLine();
 
@@ -64,6 +79,61 @@ namespace DirectoryDetailViewer
 
             logger.Info("=== Exit... ===");
             Console.ReadLine();
+        }
+
+        private static void autoCheck(List<string> pathList)
+        {
+            Console.WriteLine("AutoCheck start.");
+            logger.Info("AutoCheck start.");
+
+            foreach(string path in pathList)
+            {
+                size = 0;
+                count = 0;
+                addByteSize(path);
+
+                string formatedSize = formatSize(size);
+                if (formatedSize.Substring(formatedSize.Length - 1, 1) == "B")
+                {
+                    formatedSize += string.Format(" ({0} bytes)", size.ToString("#,0"));
+                }
+
+                Console.WriteLine("Directory Path: {0}", path);
+                Console.WriteLine("Total File Size : {0}", formatedSize);
+                Console.WriteLine("Total File Count: {0} Files", count.ToString("#,0"));
+                logger.Info("Directory Path: {0}", path);
+                logger.Info("Total File Size : {0}", formatedSize);
+                logger.Info("Total File Count: {0} Files", count.ToString("#,0"));
+            }
+
+            Console.WriteLine("AutoCheck was finished.");
+            logger.Info("AutoCheck was finished.");
+        }
+
+        private static List<string> readFile(string filePath)
+        {
+            StreamReader sr = null;
+
+            try
+            {
+                sr = new StreamReader(filePath, Encoding.Default);
+
+                List<string> pathList = new List<string>();
+                while (-1 < sr.Peek())
+                {
+                    string path = sr.ReadLine();
+                    pathList.Add(path);
+                }
+
+                return pathList;
+            }
+            finally
+            {
+                if (sr != null)
+                {
+                    sr.Close();
+                }
+            }
         }
 
         private static bool existsDirectory(string directoryPath)
@@ -127,6 +197,7 @@ namespace DirectoryDetailViewer
             }
 
             var fis = root.GetFiles();
+            indent = indent.Insert(0, "  ");
             foreach(var fi in fis)
             {
                 if (!existsFile(fi.FullName))
@@ -138,6 +209,7 @@ namespace DirectoryDetailViewer
                 count++;
                 logger.Debug("{0}{1}: {2}", indent, fi.Name, formatSize(fi.Length));
             }
+            indent = indent.Substring(2, indent.Length - 2);
         }
 
         private static string formatSize(long size)
