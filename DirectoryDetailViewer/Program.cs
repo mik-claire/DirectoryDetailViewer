@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Diagnostics;
 
 using NLog;
 
@@ -12,6 +13,7 @@ namespace DirectoryDetailViewer
     class Program
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static Stopwatch stopWatch = new Stopwatch();
 
         static void Main(string[] args)
         {
@@ -57,7 +59,13 @@ namespace DirectoryDetailViewer
 
                 size = 0;
                 count = 0;
+
+                stopWatch.Reset();
+                stopWatch.Start();
+
                 addByteSize(directoryPath);
+                
+                stopWatch.Stop();
 
                 string formatedSize = formatSize(size);
                 if (formatedSize.Substring(formatedSize.Length - 1, 1) == "B")
@@ -67,8 +75,10 @@ namespace DirectoryDetailViewer
 
                 Console.WriteLine("Total File Size : {0}", formatedSize);
                 Console.WriteLine("Total File Count: {0} Files", count.ToString("#,0"));
+                Console.WriteLine("time: {0} ms", stopWatch.ElapsedMilliseconds);
                 logger.Info("Total File Size : {0}", formatedSize);
                 logger.Info("Total File Count: {0} Files", count.ToString("#,0"));
+                logger.Debug("time: {0} ms", stopWatch.ElapsedMilliseconds);
 
                 Console.WriteLine();
                 Console.WriteLine("Please enter full directory path.");
@@ -86,6 +96,9 @@ namespace DirectoryDetailViewer
             Console.WriteLine("AutoCheck start.");
             logger.Info("AutoCheck start.");
 
+            stopWatch.Reset();
+            stopWatch.Start();
+
             foreach(string path in pathList)
             {
                 size = 0;
@@ -98,16 +111,23 @@ namespace DirectoryDetailViewer
                     formatedSize += string.Format(" ({0} bytes)", size.ToString("#,0"));
                 }
 
+                Console.WriteLine();
                 Console.WriteLine("Directory Path: {0}", path);
-                Console.WriteLine("Total File Size : {0}", formatedSize);
-                Console.WriteLine("Total File Count: {0} Files", count.ToString("#,0"));
+                Console.WriteLine("  Total File Size : {0}", formatedSize);
+                Console.WriteLine("  Total File Count: {0} Files", count.ToString("#,0"));
                 logger.Info("Directory Path: {0}", path);
-                logger.Info("Total File Size : {0}", formatedSize);
-                logger.Info("Total File Count: {0} Files", count.ToString("#,0"));
+                logger.Info("  Total File Size : {0}", formatedSize);
+                logger.Info("  Total File Count: {0} Files", count.ToString("#,0"));
             }
 
+            stopWatch.Stop();
+
+            Console.WriteLine();
             Console.WriteLine("AutoCheck was finished.");
+            Console.WriteLine("time: {0} ms", stopWatch.ElapsedMilliseconds);
+            Console.WriteLine();
             logger.Info("AutoCheck was finished.");
+            logger.Debug("time: {0} ms", stopWatch.ElapsedMilliseconds);
         }
 
         private static List<string> readFile(string filePath)
