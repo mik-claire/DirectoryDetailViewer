@@ -27,10 +27,21 @@ namespace DirectoryDetailViewer
                     List<string> pathList = readFile(filePath);
                     autoCheck(pathList);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    string message =
+@"An exception has occurred.
+{0}
+
+StackTrace:
+{1}
+";
+                    message = string.Format(message,
+                        ex.Message,
+                        ex.StackTrace);
                     // TODO
                     // 例外処理めんどい。
+                    Console.WriteLine(message);
                 }
             }
 
